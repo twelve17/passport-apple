@@ -133,6 +133,39 @@ describe('AppleStrategy', () => {
         });
     });
 
+    describe('authorization request with state parameter', function() {
+        const strategy = new AppleStrategy(
+            {
+                clientID: 'CLIENT_ID',
+                teamID: 'TEAM_ID',
+                keyID: 'KEY_ID',
+                key: 'KEY'
+            },
+            () => {}
+        );
+
+        let url;
+
+        before(function(done) {
+            chai.passport
+                .use(strategy)
+                .redirect(function(u) {
+                    url = u;
+                    done();
+                })
+                .req(function(req) {
+                    req.query = { state: 'test-state' };
+                })
+                .authenticate();
+        });
+
+        it('should be redirected', function() {
+            expect(url).to.equal(
+                'https://appleid.apple.com/auth/authorize?client_id=CLIENT_ID&response_type=code&response_mode=form_post&state=test-state'
+            );
+        });
+    });
+
     describe('failure caused by user denying request', function() {
         const strategy = new AppleStrategy(
             {
